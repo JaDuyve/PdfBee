@@ -4,6 +4,7 @@ export namespace pdfutil {
 	    id: string;
 	    name: string;
 	    value: string;
+	    multiline: boolean;
 	
 	    static createFrom(source: any = {}) {
 	        return new TextField(source);
@@ -14,6 +15,7 @@ export namespace pdfutil {
 	        this.id = source["id"];
 	        this.name = source["name"];
 	        this.value = source["value"];
+	        this.multiline = source["multiline"];
 	    }
 	}
 	export class Form {

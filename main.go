@@ -8,16 +8,18 @@ import (
 	"github.com/wailsapp/wails/v2/pkg/options/assetserver"
 )
 
+const ApplicationName = "PdfBee"
+
 //go:embed all:frontend/dist
 var assets embed.FS
 
 func main() {
 	// Create an instance of the app structure
-	app := NewApp()
+	app := NewApp(ApplicationName)
 
 	// Create application with options
 	err := wails.Run(&options.App{
-		Title:  "PdfBee",
+		Title:  ApplicationName,
 		Width:  1024,
 		Height: 768,
 		AssetServer: &assetserver.Options{

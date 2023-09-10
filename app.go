@@ -5,21 +5,29 @@ import (
 	"changeme/backend/pdfutil"
 	"context"
 	"encoding/base64"
+	"errors"
 	"fmt"
 	"github.com/wailsapp/wails/v2/pkg/runtime"
 	"os"
 )
 
+var (
+	ErrNoFileSelected = errors.New("no file selected")
+)
+
 // App struct
 type App struct {
+	AppName              string
 	ctx                  context.Context
-	CurrentFile          string
+	CurrentSelectedFile  string
 	CurrentGeneratedFile string
 }
 
 // NewApp creates a new App application struct
-func NewApp() *App {
-	return &App{}
+func NewApp(appName string) *App {
+	return &App{
+		AppName: appName,
+	}
 }
 
 // startup is called when the app starts. The context is saved
@@ -28,34 +36,19 @@ func (a *App) startup(ctx context.Context) {
 	a.ctx = ctx
 }
 
-// Greet returns a greeting for the given name
-func (a *App) Greet(name string) string {
-	return fmt.Sprintf("Hello %s, It's show time!", name)
-}
-
-func (a *App) GetCurrentFile() string {
-	file, err := os.Open(a.CurrentFile)
-	if err != nil {
-		runtime.LogError(a.ctx, err.Error())
+func (a *App) GetPreviewFilePath() (string, error) {
+	if a.CurrentGeneratedFile != "" {
+		return a.CurrentGeneratedFile, nil
 	}
 
-	defer file.Close()
-
-	stats, statsErr := file.Stat()
-	if statsErr != nil {
-		runtime.LogError(a.ctx, err.Error())
+	if a.CurrentSelectedFile != "" {
+		return a.CurrentSelectedFile, nil
 	}
 
-	var size = stats.Size()
-	bytes := make([]byte, size)
-
-	buff := bufio.NewReader(file)
-	_, err = buff.Read(bytes)
-
-	return base64.StdEncoding.EncodeToString(bytes)
+	return "", ErrNoFileSelected
 }
 
-func (a *App) OpenFileDialog() []pdfutil.Form {
+func (a *App) OpenFileDialog() {
 	options := runtime.OpenDialogOptions{
 		Filters: []runtime.FileFilter{
 			{
@@ -71,13 +64,136 @@ func (a *App) OpenFileDialog() []pdfutil.Form {
 
 	runtime.LogInfo(a.ctx, filePath)
 
-	form, err := pdfutil.GetFormFields(filePath)
+	a.CurrentSelectedFile = filePath
+	a.CurrentGeneratedFile = ""
+	runtime.EventsEmit(a.ctx, "preview_file_content_updated")
+	runtime.EventsEmit(a.ctx, "form_content_updated")
+}
+
+func (a *App) GetPreviewContent() string {
+	previewFilePath, err := a.GetPreviewFilePath()
+	if err != nil {
+		runtime.LogError(a.ctx, err.Error())
+		return ""
+	}
+
+	runtime.LogInfo(a.ctx, previewFilePath)
+
+	file, err := os.Open(previewFilePath)
 	if err != nil {
 		runtime.LogError(a.ctx, err.Error())
 	}
 
-	a.CurrentFile = filePath
-	runtime.EventsEmit(a.ctx, "current_file_changed")
+	defer file.Close()
 
-	return form
+	stats, statsErr := file.Stat()
+	if statsErr != nil {
+		runtime.LogError(a.ctx, err.Error())
+		return ""
+	}
+
+	var size = stats.Size()
+	bytes := make([]byte, size)
+
+	buff := bufio.NewReader(file)
+	_, err = buff.Read(bytes)
+
+	return base64.StdEncoding.EncodeToString(bytes)
+}
+
+func (a *App) GetPdfForm() pdfutil.Form {
+	previewFilePath, err := a.GetPreviewFilePath()
+	if err != nil {
+		runtime.LogError(a.ctx, err.Error())
+		return pdfutil.Form{}
+	}
+
+	form, err := pdfutil.GetFormFields(previewFilePath)
+	if err != nil {
+		runtime.LogError(a.ctx, err.Error())
+	}
+
+	return *form
+}
+
+func (a *App) UpdatePdfForm(form pdfutil.Form) {
+	err := a.updatePdfForm(form)
+	if err != nil {
+		runtime.LogError(a.ctx, err.Error())
+	}
+}
+
+func (a *App) updatePdfForm(form pdfutil.Form) error {
+	runtime.LogInfo(a.ctx, form.String())
+	runtime.LogInfo(a.ctx, a.CurrentGeneratedFile)
+
+	prevGeneratedFile := a.CurrentGeneratedFile
+
+	pattern := fmt.Sprintf("%s-", a.AppName)
+	f, err := os.CreateTemp("", pattern)
+	if err != nil {
+		return err
+	}
+
+	defer f.Close()
+
+	err = pdfutil.FillForm(form, a.CurrentSelectedFile, f)
+	if err != nil {
+		return err
+	}
+
+	if prevGeneratedFile != "" {
+		err = os.Remove(prevGeneratedFile)
+		if err != nil {
+			return err
+		}
+	}
+
+	a.CurrentGeneratedFile = f.Name()
+
+	f.Close()
+	runtime.EventsEmit(a.ctx, "preview_file_content_updated")
+
+	return nil
+}
+
+func (a *App) UpdatePdfFormWithFieldNames() {
+	err := a.updatePdfFormWithFieldNames()
+	if err != nil {
+		runtime.LogError(a.ctx, err.Error())
+	}
+}
+
+func (a *App) updatePdfFormWithFieldNames() error {
+	runtime.LogInfo(a.ctx, a.CurrentGeneratedFile)
+
+	prevGeneratedFile := a.CurrentGeneratedFile
+
+	pattern := fmt.Sprintf("%s-", a.AppName)
+	f, err := os.CreateTemp("", pattern)
+	if err != nil {
+		return err
+	}
+
+	defer f.Close()
+
+	err = pdfutil.FillFormWithFieldName(a.CurrentSelectedFile, f)
+	if err != nil {
+		return err
+	}
+
+	if prevGeneratedFile != "" {
+		err = os.Remove(prevGeneratedFile)
+		if err != nil {
+			return err
+		}
+	}
+
+	a.CurrentGeneratedFile = f.Name()
+
+	f.Close()
+	runtime.EventsEmit(a.ctx, "preview_file_content_updated")
+	runtime.EventsEmit(a.ctx, "form_content_updated")
+
+	return nil
 }
