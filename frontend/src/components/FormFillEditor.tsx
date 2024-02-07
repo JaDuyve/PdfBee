@@ -8,6 +8,7 @@ import {
 import React, {ReactElement, useEffect, useState} from "react";
 import {pdfutil} from "../../wailsjs/go/models";
 import {EventsOn} from "../../wailsjs/runtime";
+import { Document, Page } from 'react-pdf'
 
 export default function FormFillEditor(): ReactElement {
     const [ pdfContent, form]  = usePdfContent();
@@ -102,6 +103,13 @@ function TextField({textField, updateForm} : {textField: pdfutil.TextField, upda
 }
 
 function PdfViewer(pdfContent: string): ReactElement {
+    const [numPages, setNumPages] = useState<number>();
+    const [pageNumber, setPageNumber] = useState<number>(1);
+
+    function onDocumentLoadSuccess({numPages}: { numPages: number }) {
+        setNumPages(numPages)
+    }
+
     if (pdfContent === "") {
         return (
             <div>
@@ -112,7 +120,14 @@ function PdfViewer(pdfContent: string): ReactElement {
 
     return (
         <div>
-            <iframe src={`data:application/pdf;base64,${pdfContent}`} className="w-full h-[60rem]"/>
+            {/*<iframe src={`data:application/pdf;base64,${pdfContent}`} className="w-full h-[60rem]"/>*/}
+            <Document
+                file={`data:application/pdf;base64,${pdfContent}`}
+                onLoadSuccess={onDocumentLoadSuccess}>
+
+                <Page pageNumber={pageNumber}/>
+            </Document>
+            <p>Page {pageNumber} of {numPages}</p>
         </div>
     )
 }

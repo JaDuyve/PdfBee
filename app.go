@@ -111,6 +111,7 @@ func (a *App) GetPdfForm() pdfutil.Form {
 	form, err := pdfutil.GetFormFields(previewFilePath)
 	if err != nil {
 		runtime.LogError(a.ctx, err.Error())
+		return pdfutil.Form{}
 	}
 
 	return *form
