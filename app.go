@@ -62,7 +62,7 @@ func (a *App) OpenFileDialog() {
 		runtime.LogError(a.ctx, err.Error())
 	}
 
-	runtime.LogInfo(a.ctx, filePath)
+	runtime.LogDebug(a.ctx, filePath)
 
 	a.CurrentSelectedFile = filePath
 	a.CurrentGeneratedFile = ""
@@ -125,9 +125,6 @@ func (a *App) UpdatePdfForm(form pdfutil.Form) {
 }
 
 func (a *App) updatePdfForm(form pdfutil.Form) error {
-	runtime.LogInfo(a.ctx, form.String())
-	runtime.LogInfo(a.ctx, a.CurrentGeneratedFile)
-
 	prevGeneratedFile := a.CurrentGeneratedFile
 
 	pattern := fmt.Sprintf("%s-", a.AppName)
@@ -166,7 +163,7 @@ func (a *App) UpdatePdfFormWithFieldNames() {
 }
 
 func (a *App) updatePdfFormWithFieldNames() error {
-	runtime.LogInfo(a.ctx, a.CurrentGeneratedFile)
+	runtime.LogDebug(a.ctx, a.CurrentGeneratedFile)
 
 	prevGeneratedFile := a.CurrentGeneratedFile
 
