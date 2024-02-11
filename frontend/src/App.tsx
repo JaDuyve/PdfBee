@@ -5,11 +5,11 @@ import FormFillEditor from "./components/FormFillEditor";
 function App() {
 
     return (
-        <>
-            <div id="App" className="m-5">
-                <FormFillEditor/>
-            </div>
-        </>
+        <div className="h-dvh">
+                <div id="App" className="m-5">
+                    <FormFillEditor/>
+                </div>
+        </div>
     )
 }
 

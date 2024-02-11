@@ -33,7 +33,7 @@ export default function FormFillEditor(): ReactElement {
                 <Form form={form} updateForm={handleFormUpdate} />
             </div>
 
-            <div className="basis-4/5">
+            <div className="basis-4/5 h-4/5">
                 {PdfViewer(pdfContent)}
             </div>
         </div>
