@@ -8,7 +8,6 @@ import {
 import React, {ReactElement, useEffect, useState} from "react";
 import {pdfutil} from "../../wailsjs/go/models";
 import {EventsOn} from "../../wailsjs/runtime";
-import { Document, Page } from 'react-pdf'
 
 export default function FormFillEditor(): ReactElement {
     const [ pdfContent, form]  = usePdfContent();
@@ -120,14 +119,7 @@ function PdfViewer(pdfContent: string): ReactElement {
 
     return (
         <div>
-            {/*<iframe src={`data:application/pdf;base64,${pdfContent}`} className="w-full h-[60rem]"/>*/}
-            <Document
-                file={`data:application/pdf;base64,${pdfContent}`}
-                onLoadSuccess={onDocumentLoadSuccess}>
-
-                <Page pageNumber={pageNumber}/>
-            </Document>
-            <p>Page {pageNumber} of {numPages}</p>
+            <iframe src={`data:application/pdf;base64,${pdfContent}`} className="w-full h-[60rem]"/>
         </div>
     )
 }
