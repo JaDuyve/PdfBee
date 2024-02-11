@@ -3,12 +3,12 @@ package pdfutil
 import (
 	"errors"
 	"fmt"
-	"github.com/labstack/gommon/log"
 	"github.com/pdfcpu/pdfcpu/pkg/api"
 	"github.com/pdfcpu/pdfcpu/pkg/pdfcpu/create"
 	"github.com/pdfcpu/pdfcpu/pkg/pdfcpu/form"
 	"github.com/pdfcpu/pdfcpu/pkg/pdfcpu/model"
 	"io"
+	"log"
 	"os"
 	"sort"
 	"strings"
@@ -126,7 +126,7 @@ func FillForm(inputForm Form, filePath string, w io.Writer) error {
 			fmt.Printf("field: %s, locked: %v, page: %v", field.Name, field.Locked, field.Pages)
 			field.Value = inputField.Value
 		} else {
-			log.Infof("field not found: %s", inputField.Name)
+			log.Printf("field not found: %s", inputField.Name)
 		}
 	}
 
