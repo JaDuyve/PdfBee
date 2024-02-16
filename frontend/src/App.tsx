@@ -1,12 +1,11 @@
 import './App.css';
 import FormFillEditor from "./components/FormFillEditor";
 
-
 function App() {
 
     return (
-        <div className="h-dvh">
-                <div id="App" className="m-5">
+        <div className="container">
+                <div id="App">
                     <FormFillEditor/>
                 </div>
         </div>

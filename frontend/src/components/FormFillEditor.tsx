@@ -14,7 +14,6 @@ export default function FormFillEditor(): ReactElement {
 
     async function openFileDialog() {
         await OpenFileDialog()
-        console.log("End OpenFileDialog")
     }
 
     async function handleFormUpdate() : Promise<void> {
@@ -102,13 +101,6 @@ function TextField({textField, updateForm} : {textField: pdfutil.TextField, upda
 }
 
 function PdfViewer(pdfContent: string): ReactElement {
-    const [numPages, setNumPages] = useState<number>();
-    const [pageNumber, setPageNumber] = useState<number>(1);
-
-    function onDocumentLoadSuccess({numPages}: { numPages: number }) {
-        setNumPages(numPages)
-    }
-
     if (pdfContent === "") {
         return (
             <div>
